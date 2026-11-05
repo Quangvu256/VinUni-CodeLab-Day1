@@ -187,3 +187,53 @@ Streaming giúp tạo trải nghiệm người dùng mượt mà giống như Ch
 
 ---
 > **💡 Vibe Coding Tip:** Hãy tận dụng Cursor hoặc Copilot bằng cách cung cấp cho nó ngữ cảnh của file `student_guide.md` và `template.py` để viết code nháp nhanh chóng, sau đó kiểm tra và hoàn thiện bằng tay!
+
+
+---
+
+## 💰 5. Báo cáo chi phí token
+
+**Công thức** (giá theo `PRICING_1M_TOKENS` trong `template.py`):
+
+```
+Cost = (input_tokens × giá_input_1M + output_tokens × giá_output_1M) / 1,000,000
+```
+
+| Model | Input / 1M token | Output / 1M token |
+|---|---|---|
+| gpt-4o | $5.00 | $20.00 |
+| gpt-4o-mini | $0.15 | $0.60 |
+| gemini-3.1-flash-lite | $0.25 | $1.50 |
+
+> Giá gemini-3.1-flash-lite lấy từ tổng hợp của nhiều trang tra giá, chưa đối chiếu với trang giá chính thức của Google. Một nguồn ghi mức thấp hơn ($0.125 / $0.75). Hãy kiểm tra tại https://ai.google.dev/gemini-api/docs/pricing.
+
+### Kết quả đo thực tế (cùng 3 prompt, `max_tokens=256`, temperature 0.7)
+
+Số token lấy từ `usage` của từng API. Chi phí tính bằng công thức trên.
+
+**OpenAI gpt-4o** (`call_openai`)
+
+| Prompt | Latency | Tokens (In/Out) | Cost (USD) |
+|---|---|---|---|
+| Giải thích temperature vs top_p (tiếng Việt, 2 câu) | 2.50s | 31 / 79 | $0.00173500 |
+| Explain temperature vs top_p (English, 2 sentences) | 2.22s | 20 / 83 | $0.00176000 |
+| Viết hàm Python kiểm tra số nguyên tố | 3.32s | 19 / 256 | $0.00521500 |
+| **Tổng** | | **70 / 418** | **$0.00871000** |
+
+**Google gemini-3.1-flash-lite** (`call_gemini`)
+
+| Prompt | Latency | Tokens (In/Out) | Cost (USD) |
+|---|---|---|---|
+| Giải thích temperature vs top_p (tiếng Việt, 2 câu) | 1.06s | 23 / 77 | $0.00012125 |
+| Explain temperature vs top_p (English, 2 sentences) | 35.45s | 15 / 73 | $0.00011325 |
+| Viết hàm Python kiểm tra số nguyên tố | 1.22s | 12 / 252 | $0.00038100 |
+| **Tổng** | | **50 / 402** | **$0.00061550** |
+
+**So sánh:** trên 3 prompt này, gpt-4o tốn $0.00871 và Gemini tốn $0.000616, tức gpt-4o đắt hơn khoảng 14 lần.
+
+**Lưu ý khi đọc số liệu:**
+- Latency 35.45s của Gemini ở prompt 2 là một lần chậm bất thường. Hai lần chạy trước cùng prompt đó mất 0.76s và 0.93s. Đừng dùng con số này để kết luận về tốc độ trung bình.
+- Prompt 3 của gpt-4o dùng đúng 256 token output, bằng giới hạn `max_tokens`, nên câu trả lời có thể bị cắt giữa chừng.
+- Số token vào của gpt-4o cao hơn Gemini cho cùng prompt (31 so với 23), vì hai model dùng tokenizer khác nhau.
+- Số token output thay đổi nhẹ giữa các lần chạy do model sinh văn bản ngẫu nhiên.
+- Chưa đo gpt-4o-mini.
